@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>隨身空耳機 Pro</title>
+    <style>
+        body { 
+            background: #121212; 
+            color: white; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            padding: 15px; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            box-sizing: border-box; 
+        }
+        h2 { font-size: 1.2rem; margin: 0 0 10px 0; color: #00FF00; text-align: center; letter-spacing: 1px; }
+        
+        /* 一鍵清除按鈕樣式 */
+        .btn-clear { 
+            background: #ff4757; 
+            color: white; 
+            border: none; 
+            padding: 12px; 
+            border-radius: 10px; 
+            margin-bottom: 10px; 
+            font-size: 16px; 
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3);
+            active: transform: scale(0.95);
+        }
+        .btn-clear:active { background: #ff6b81; transform: scale(0.98); }
+
+        textarea { 
+            flex: 1; 
+            background: #1e1e1e; 
+            color: #ccc; 
+            border: 1px solid #333; 
+            border-radius: 12px; 
+            padding: 15px; 
+            font-size: 16px; 
+            margin-bottom: 10px; 
+            resize: none; 
+            outline: none; 
+            -webkit-appearance: none; /* 修正 iOS 內建陰影 */
+        }
+        
+        .output { 
+            flex: 1.5; 
+            background: #000; 
+            color: #ffff00; 
+            border: 2px solid #ffff00; 
+            border-radius: 12px; 
+            padding: 15px; 
+            font-size: 22px; 
+            font-weight: bold; 
+            overflow-y: auto; 
+            white-space: pre-wrap; 
+            line-height: 1.6; 
+            box-shadow: inset 0 0 10px rgba(255, 255, 0, 0.1);
+        }
+        .hint { font-size: 12px; color: #555; text-align: center; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <h2>🎤 隨身空耳提詞機</h2>
+    
+    <button class="btn-clear" onclick="clearAll()">🗑️ 一鍵清除重來</button>
+    
+    <textarea id="input" placeholder="在此貼上韓文歌詞..." oninput="convert()"></textarea>
+    
+    <div id="output" class="output"></div>
+    
+    <div class="hint">貼上後自動轉換｜1字對1音流暢版</div>
+
+<script>
+    const INITIALS = ["嘎", "嘎", "那", "搭", "搭", "拉", "麻", "八", "八", "撒", "撒", "", "基", "基", "七", "卡", "塔", "趴", "哈"];
+    const MEDIALS = ["啊", "欸", "呀", "耶", "歐", "欸", "優", "耶", "歐", "哇", "位", "威", "優", "屋", "窩", "位", "威", "ㄩ", "額", "依", "依"];
+    const FINALS = ["", "", "", "", "恩", "", "", "", "", "", "", "", "", "", "", "", "姆", "", "", "", "", "昂", "", "", "", "", "", ""];
+    
+    const superShortDict = { 
+        "멈칫": "蒙七", "거리": "勾哩", "말고": "馬勾", "사랑": "撒郎", "놀이": "露哩", 
+        "우리": "屋哩", "다리": "打哩", "사이": "塞", "슬그머니": "蘇哥摸泥"
+    };
+
+    function clearAll() {
+        document.getElementById('input').value = '';
+        document.getElementById('output').innerText = '';
+        document.getElementById('input').focus(); // 清除後自動鎖定輸入框，方便直接貼新歌詞
+    }
+
+    function convert() {
+        let text = document.getElementById('input').value;
+        let out = document.getElementById('output');
+        if (!text) { out.innerText = ""; return; }
+        
+        // 優先跑詞庫替換
+        let processedText = text;
+        for (let key in superShortDict) {
+            processedText = processedText.replace(new RegExp(key, 'g'), superShortDict[key]);
+        }
+        
+        let result = "";
+        for (let i = 0; i < processedText.length; i++) {
+            let code = processedText.charCodeAt(i) - 44032;
+            if (code >= 0 && code <= 11171) {
+                let ini = Math.floor(code / 588), med = Math.floor((code % 588) / 28), fin = code % 28;
+                let s = INITIALS[ini] + MEDIALS[med];
+                if (s.length > 1 && s.endsWith("啊")) s = s.slice(0, -1);
+                if (ini === 11) s = MEDIALS[med];
+                result += s + FINALS[fin];
+            } else { 
+                result += processedText[i]; 
+            }
+        }
+        out.innerText = result.replace(/依依/g, "依").replace(/搭啊/g, "搭");
+    }
+</script>
+</body>
+</html>
