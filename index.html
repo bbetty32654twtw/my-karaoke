@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>隨身空耳機</title>
+    <style>
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; }
+        .btn { background: #ff4757; color: #fff; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+        textarea { flex: 1; background: #1a1a1a; color: #fff; border: 1px solid #333; border-radius: 10px; padding: 12px; font-size: 16px; margin-bottom: 10px; outline: none; }
+        #output { flex: 1.5; background: #000; color: #ffff00; border: 2px solid #ffff00; border-radius: 10px; padding: 12px; font-size: 24px; font-weight: bold; overflow-y: auto; white-space: pre-wrap; line-height: 1.4; }
+    </style>
+</head>
+<body>
+    <button class="btn" onclick="document.getElementById('input').value=''; document.getElementById('output').innerText='';">🗑️ 一鍵清除重來</button>
+    <textarea id="input" placeholder="貼上韓文歌詞..." oninput="convert()"></textarea>
+    <div id="output"></div>
+
+<script>
+    const INITIALS = ["嘎", "嘎", "那", "搭", "搭", "拉", "麻", "八", "八", "撒", "撒", "", "基", "基", "七", "卡", "塔", "趴", "哈"];
+    const MEDIALS = ["啊", "欸", "呀", "耶", "歐", "欸", "優", "耶", "歐", "哇", "位", "威", "優", "屋", "窩", "位", "威", "ㄩ", "額", "依", "依"];
+    const FINALS = ["", "", "", "", "恩", "", "", "", "", "", "", "", "", "", "", "", "姆", "", "", "", "", "昂", "", "", "", "", "", ""];
+
+    function convert() {
+        let text = document.getElementById('input').value;
+        let result = "";
+        for (let i = 0; i < text.length; i++) {
+            let code = text.charCodeAt(i) - 44032;
+            if (code >= 0 && code <= 11171) {
+                let ini = Math.floor(code / 588), med = Math.floor((code % 588) / 28), fin = code % 28;
+                
+                let s = "";
+                if (ini === 11) {
+                    // 如果是 ㅇ (空音)，直接取母音
+                    s = MEDIALS[med];
+                } else {
+                    // 正常的子音 + 母音
+                    s = INITIALS[ini] + MEDIALS[med];
+                    // 修正「那啊 -> 那」這種多餘的結尾
+                    if (s.length > 1 && s.endsWith("啊")) s = s.slice(0, -1);
+                }
+                result += s + FINALS[fin];
+            } else { 
+                result += text[i]; 
+            }
+        }
+        // 最後處理連讀與視覺修正
+        document.getElementById('output').innerText = result
+            .replace(/依依/g, "依")
+            .replace(/搭啊/g, "搭")
+            .replace(/屋屋/g, "屋")
+            .replace(/歐歐/g, "歐");
+    }
+</script>
+</body>
+</html>
